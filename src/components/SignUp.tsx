@@ -21,11 +21,19 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
   const [name, setName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState<Date>();
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpRequested, setOtpRequested] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement get OTP logic
-    console.log('Get OTP:', { name, dateOfBirth, email });
+    if (!otpRequested) {
+      // Get OTP logic
+      console.log('Get OTP:', { name, dateOfBirth, email });
+      setOtpRequested(true);
+    } else {
+      // Sign up logic
+      console.log('Sign up:', { name, dateOfBirth, email, otp });
+    }
   };
 
   return (
@@ -89,8 +97,22 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
           />
         </div>
 
+        {otpRequested && (
+          <div className="space-y-2">
+            <Label htmlFor="otp">OTP</Label>
+            <Input
+              id="otp"
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+            />
+          </div>
+        )}
+
         <Button type="submit" className="w-full">
-          Get OTP
+          {otpRequested ? 'Sign up' : 'Get OTP'}
         </Button>
 
         <div className="text-center">
