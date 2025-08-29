@@ -1,39 +1,37 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+
+interface DashboardProps {
+  onSignOut: () => void;
+}
 
 interface Note {
   id: string;
   title: string;
-  content: string;
   createdAt: Date;
 }
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
   const [notes, setNotes] = useState<Note[]>([
-    { id: '1', title: 'Task 1', content: 'Sample note content...', createdAt: new Date() },
-    { id: '2', title: 'Task 2', content: 'Another note content...', createdAt: new Date() },
+    { id: '1', title: 'Note 1', createdAt: new Date() },
+    { id: '2', title: 'Note 2', createdAt: new Date() }
   ]);
-  
-  const [newNote, setNewNote] = useState({ title: '', content: '' });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newNote, setNewNote] = useState('');
+  const [showCreateNote, setShowCreateNote] = useState(false);
 
   const handleCreateNote = () => {
-    if (newNote.title.trim() && newNote.content.trim()) {
+    if (newNote.trim()) {
       const note: Note = {
         id: Date.now().toString(),
-        title: newNote.title,
-        content: newNote.content,
-        createdAt: new Date(),
+        title: newNote,
+        createdAt: new Date()
       };
       setNotes([...notes, note]);
-      setNewNote({ title: '', content: '' });
-      setIsDialogOpen(false);
+      setNewNote('');
+      setShowCreateNote(false);
     }
   };
 
@@ -43,107 +41,96 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+      <div className="max-w-md mx-auto bg-background">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">HD</span>
             </div>
-            <span className="font-semibold">Dashboard</span>
+            <h1 className="text-xl font-semibold">Dashboard</h1>
           </div>
-          <Button variant="ghost" size="sm">
-            Sign out
+          <Button 
+            variant="link" 
+            className="text-primary text-sm p-0"
+            onClick={onSignOut}
+          >
+            Sign Out
           </Button>
         </div>
-      </header>
 
-      <main className="max-w-4xl mx-auto p-4">
-        {/* Welcome section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">Welcome, Jonas Kahnwald !</h1>
-          <p className="text-muted-foreground">jonas@gmail.com</p>
-        </div>
+        {/* Welcome Section */}
+        <div className="p-4">
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <h2 className="text-lg font-semibold mb-1">Welcome, Jonas Kahnwald !</h2>
+              <p className="text-sm text-muted-foreground">Email: xxxxxx@xxxx.com</p>
+            </CardContent>
+          </Card>
 
-        {/* Create Note Button */}
-        <div className="mb-6">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Note
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New Note</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="note-title">Title</Label>
-                  <Input
-                    id="note-title"
-                    value={newNote.title}
-                    onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
-                    placeholder="Enter note title"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="note-content">Content</Label>
-                  <Textarea
-                    id="note-content"
-                    value={newNote.content}
-                    onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-                    placeholder="Enter note content"
-                    rows={4}
-                  />
-                </div>
-                <Button onClick={handleCreateNote} className="w-full">
-                  Create Note
+          {/* Create Note Button */}
+          <Button 
+            className="w-full mb-6"
+            onClick={() => setShowCreateNote(!showCreateNote)}
+          >
+            Create Note
+          </Button>
+
+          {/* Create Note Input */}
+          {showCreateNote && (
+            <div className="mb-4 space-y-2">
+              <Input
+                placeholder="Enter note title"
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleCreateNote()}
+              />
+              <div className="flex space-x-2">
+                <Button onClick={handleCreateNote} size="sm">Add Note</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setShowCreateNote(false);
+                    setNewNote('');
+                  }}
+                >
+                  Cancel
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+            </div>
+          )}
 
-        {/* Notes Section */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Notes</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {notes.map((note) => (
-              <Card key={note.id} className="relative group">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    {note.title}
+          {/* Notes Section */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Notes</h3>
+            <div className="space-y-2">
+              {notes.map((note) => (
+                <Card key={note.id} className="hover:shadow-sm transition-shadow">
+                  <CardContent className="p-3 flex items-center justify-between">
+                    <span className="text-sm">{note.title}</span>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteNote(note.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-8 w-8 p-0 hover:bg-destructive/10"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
                     </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm line-clamp-3">
-                    {note.content}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {note.createdAt.toLocaleDateString()}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {notes.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No notes yet. Create your first note!</p>
+                  </CardContent>
+                </Card>
+              ))}
+              {notes.length === 0 && (
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <p className="text-muted-foreground text-sm">No notes yet. Create your first note!</p>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-          )}
-        </section>
-      </main>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

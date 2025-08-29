@@ -15,9 +15,10 @@ import AuthLayout from './AuthLayout';
 
 interface SignUpProps {
   onSwitchToSignIn: () => void;
+  onSignUp: () => void;
 }
 
-const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
+const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
   const [name, setName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState<Date>();
   const [email, setEmail] = useState('');
@@ -33,6 +34,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     } else {
       // Sign up logic
       console.log('Sign up:', { name, dateOfBirth, email, otp });
+      onSignUp();
     }
   };
 

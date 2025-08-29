@@ -11,6 +11,11 @@ const Index = () => {
     setIsAuthenticated(true);
   };
 
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    setShowSignUp(false);
+  };
+
   const handleSwitchToSignUp = () => {
     setShowSignUp(true);
   };
@@ -20,11 +25,11 @@ const Index = () => {
   };
   
   if (isAuthenticated) {
-    return <Dashboard />;
+    return <Dashboard onSignOut={handleSignOut} />;
   }
   
   if (showSignUp) {
-    return <SignUp onSwitchToSignIn={handleSwitchToSignIn} />;
+    return <SignUp onSwitchToSignIn={handleSwitchToSignIn} onSignUp={handleSignIn} />;
   }
   
   return (
