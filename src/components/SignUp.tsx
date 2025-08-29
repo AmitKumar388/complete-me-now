@@ -5,29 +5,40 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import AuthLayout from './AuthLayout';
 
-interface SignInProps {
-  onSwitchToSignUp: () => void;
-  onSignIn: () => void;
+interface SignUpProps {
+  onSwitchToSignIn: () => void;
 }
 
-const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
+const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement sign in logic
-    console.log('Sign in:', { email, otp, keepLoggedIn });
-    onSignIn();
+    // TODO: Implement sign up logic
+    console.log('Sign up:', { name, email, otp, keepLoggedIn });
   };
 
   return (
     <AuthLayout 
-      title="Sign In"
-      subtitle="Please sign in to continue to your account."
+      title="Sign Up"
+      subtitle="Please create an account to continue."
     >
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Full Name</Label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="Jonas Kahnwald"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -67,18 +78,18 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
         </div>
 
         <Button type="submit" className="w-full">
-          Sign In
+          Sign Up
         </Button>
 
         <div className="text-center">
-          <span className="text-sm text-muted-foreground">Need an account? </span>
+          <span className="text-sm text-muted-foreground">Already have an account? </span>
           <Button 
             variant="link" 
             className="text-sm p-0 h-auto"
-            onClick={onSwitchToSignUp}
+            onClick={onSwitchToSignIn}
             type="button"
           >
-            Create one
+            Sign in
           </Button>
         </div>
       </form>
@@ -86,4 +97,4 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
   );
 };
 
-export default SignIn;
+export default SignUp;
