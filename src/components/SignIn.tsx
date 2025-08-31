@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
+import { authAPI } from '@/lib/api';
 import AuthLayout from './AuthLayout';
 
 interface SignInProps {
@@ -12,14 +14,33 @@ interface SignInProps {
 
 const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [password, setPassword] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement sign in logic
-    console.log('Sign in:', { email, otp, keepLoggedIn });
-    onSignIn();
+    setIsLoading(true);
+
+    try {
+      const response = await authAPI.login({ email, password });
+      
+      toast({
+        title: "Success",
+        description: "Successfully signed in!",
+      });
+      
+      onSignIn();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to sign in",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,13 +62,13 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="otp">OTP</Label>
+          <Label htmlFor="password">Password</Label>
           <Input
-            id="otp"
-            type="text"
-            placeholder="Enter OTP"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
@@ -66,8 +87,8 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
           </Button>
         </div>
 
-        <Button type="submit" className="w-full">
-          Sign In
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Signing In..." : "Sign In"}
         </Button>
 
         <div className="text-center">
