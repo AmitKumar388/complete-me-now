@@ -25,7 +25,7 @@ const updateNoteSchema = Joi.object({
 });
 
 // Get all notes
-router.get('/', async (req: AuthRequest, res, next) => {
+router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
@@ -49,7 +49,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
     // Execute query with pagination
     const notes = await Note.find(query)
       .sort({ isPinned: -1, updatedAt: -1 })
-      .limit(limit * 1)
+      .limit(limit)
       .skip((page - 1) * limit);
 
     const total = await Note.countDocuments(query);
@@ -66,7 +66,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
 });
 
 // Get single note
-router.get('/:id', async (req: AuthRequest, res, next) => {
+router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const note = await Note.findOne({
       _id: req.params.id,
@@ -74,7 +74,8 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
     });
 
     if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+      res.status(404).json({ message: 'Note not found' });
+      return;
     }
 
     res.json({ note });
@@ -84,11 +85,12 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
 });
 
 // Create note
-router.post('/', async (req: AuthRequest, res, next) => {
+router.post('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { error } = createNoteSchema.validate(req.body);
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      res.status(400).json({ message: error.details[0].message });
+      return;
     }
 
     const note = new Note({
@@ -108,11 +110,12 @@ router.post('/', async (req: AuthRequest, res, next) => {
 });
 
 // Update note
-router.put('/:id', async (req: AuthRequest, res, next) => {
+router.put('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { error } = updateNoteSchema.validate(req.body);
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      res.status(400).json({ message: error.details[0].message });
+      return;
     }
 
     const note = await Note.findOneAndUpdate(
@@ -122,7 +125,8 @@ router.put('/:id', async (req: AuthRequest, res, next) => {
     );
 
     if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+      res.status(404).json({ message: 'Note not found' });
+      return;
     }
 
     res.json({
@@ -135,7 +139,7 @@ router.put('/:id', async (req: AuthRequest, res, next) => {
 });
 
 // Delete note
-router.delete('/:id', async (req: AuthRequest, res, next) => {
+router.delete('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const note = await Note.findOneAndDelete({
       _id: req.params.id,
@@ -143,7 +147,8 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
     });
 
     if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+      res.status(404).json({ message: 'Note not found' });
+      return;
     }
 
     res.json({ message: 'Note deleted successfully' });
@@ -153,7 +158,7 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
 });
 
 // Toggle pin status
-router.patch('/:id/pin', async (req: AuthRequest, res, next) => {
+router.patch('/:id/pin', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const note = await Note.findOne({
       _id: req.params.id,
@@ -161,7 +166,8 @@ router.patch('/:id/pin', async (req: AuthRequest, res, next) => {
     });
 
     if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+      res.status(404).json({ message: 'Note not found' });
+      return;
     }
 
     note.isPinned = !note.isPinned;

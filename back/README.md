@@ -40,8 +40,8 @@ cp .env.example .env
 4. Update the `.env` file with your configuration:
 ```env
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/notes-app
-JWT_SECRET=your-super-secret-jwt-key-here
+MONGODB_URI=mongodb://localhost:27017/Notes
+JWT_SECRET=PnwWHfsgwfZP8wxDKsnznLO698J0WxkbpqaRXoMQ7D8=
 FRONTEND_URL=http://localhost:3000
 ```
 

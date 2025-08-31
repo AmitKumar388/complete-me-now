@@ -37,20 +37,17 @@ router.post('/register', async (req, res, next) => {
 
     const { name, email, password } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // Create user
     const user = new User({ name, email, password });
     await user.save();
 
-    // Generate token
     const token = generateToken(user._id.toString());
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User registered successfully',
       token,
       user: {
@@ -61,7 +58,7 @@ router.post('/register', async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -75,22 +72,19 @@ router.post('/login', async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // Generate token
     const token = generateToken(user._id.toString());
 
-    res.json({
+    return res.json({
       message: 'Login successful',
       token,
       user: {
@@ -101,14 +95,14 @@ router.post('/login', async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
 // Get current user
 router.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
-    res.json({
+    return res.json({
       user: {
         id: req.user!._id,
         name: req.user!.name,
@@ -117,13 +111,13 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
 // Logout (client-side token removal)
 router.post('/logout', authenticateToken, async (req, res) => {
-  res.json({ message: 'Logout successful' });
+  return res.json({ message: 'Logout successful' });
 });
 
 export default router;
