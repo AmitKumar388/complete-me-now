@@ -5,10 +5,8 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-// All routes require authentication
 router.use(authenticateToken);
 
-// Validation schemas
 const createNoteSchema = Joi.object({
   title: Joi.string().max(200).required(),
   content: Joi.string().max(10000).required(),
@@ -24,7 +22,6 @@ const updateNoteSchema = Joi.object({
   color: Joi.string().pattern(/^#[0-9A-F]{6}$/i).optional()
 });
 
-// Get all notes
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -32,7 +29,6 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
     const search = req.query.search as string;
     const tag = req.query.tag as string;
 
-    // Build query
     const query: any = { userId: req.user!._id };
     
     if (search) {
@@ -46,7 +42,6 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       query.tags = tag;
     }
 
-    // Execute query with pagination
     const notes = await Note.find(query)
       .sort({ isPinned: -1, updatedAt: -1 })
       .limit(limit)
@@ -65,7 +60,6 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   }
 });
 
-// Get single note
 router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const note = await Note.findOne({
@@ -84,7 +78,6 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   }
 });
 
-// Create note
 router.post('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { error } = createNoteSchema.validate(req.body);
@@ -109,7 +102,6 @@ router.post('/', async (req: AuthRequest, res, next): Promise<void> => {
   }
 });
 
-// Update note
 router.put('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { error } = updateNoteSchema.validate(req.body);
@@ -138,7 +130,6 @@ router.put('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   }
 });
 
-// Delete note
 router.delete('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const note = await Note.findOneAndDelete({
@@ -157,7 +148,6 @@ router.delete('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   }
 });
 
-// Toggle pin status
 router.patch('/:id/pin', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const note = await Note.findOne({

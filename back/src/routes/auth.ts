@@ -6,7 +6,6 @@ import { authenticateToken, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-// Validation schemas
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
   email: Joi.string().email().required(),
@@ -18,7 +17,6 @@ const loginSchema = Joi.object({
   password: Joi.string().required()
 });
 
-// Generate JWT token
 const generateToken = (userId: string): string => {
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
@@ -27,7 +25,6 @@ const generateToken = (userId: string): string => {
   return jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
 };
 
-// Register
 router.post('/register', async (req, res, next) => {
   try {
     const { error } = registerSchema.validate(req.body);
@@ -62,7 +59,6 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-// Login
 router.post('/login', async (req, res, next) => {
   try {
     const { error } = loginSchema.validate(req.body);
@@ -99,7 +95,6 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-// Get current user
 router.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     return res.json({
@@ -115,7 +110,6 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
   }
 });
 
-// Logout (client-side token removal)
 router.post('/logout', authenticateToken, async (req, res) => {
   return res.json({ message: 'Logout successful' });
 });
