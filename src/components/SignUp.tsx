@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { useToast } from '@/hooks/use-toast';
+import { authAPI } from '@/lib/api';
 import AuthLayout from './AuthLayout';
 
 interface SignUpProps {
@@ -20,21 +13,52 @@ interface SignUpProps {
 
 const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
   const [name, setName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState<Date>();
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpRequested, setOtpRequested] = useState(false);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otpRequested) {
-      // Get OTP logic
-      console.log('Get OTP:', { name, dateOfBirth, email });
-      setOtpRequested(true);
-    } else {
-      // Sign up logic
-      console.log('Sign up:', { name, dateOfBirth, email, otp });
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await authAPI.register({ name, email, password });
+      
+      toast({
+        title: "Success",
+        description: "Account created successfully!",
+      });
+      
       onSignUp();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -57,34 +81,29 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="dateOfBirth">Date of Birth</Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="dateOfBirth"
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !dateOfBirth && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {dateOfBirth ? format(dateOfBirth, "dd MMMM yyyy") : <span>11 December 1997</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateOfBirth}
-                onSelect={setDateOfBirth}
-                disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
-                }
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            placeholder="Confirm your password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+          />
         </div>
 
         <div className="space-y-2">
@@ -99,22 +118,8 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
           />
         </div>
 
-        {otpRequested && (
-          <div className="space-y-2">
-            <Label htmlFor="otp">OTP</Label>
-            <Input
-              id="otp"
-              type="text"
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-            />
-          </div>
-        )}
-
-        <Button type="submit" className="w-full">
-          {otpRequested ? 'Sign up' : 'Get OTP'}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating Account..." : "Sign Up"}
         </Button>
 
         <div className="text-center">
