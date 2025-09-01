@@ -1,27 +1,29 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { authAPI } from '@/lib/api';
-import AuthLayout from './AuthLayout';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { authAPI } from "@/lib/api";
+import AuthLayout from "./AuthLayout";
 
 interface SignUpProps {
   onSwitchToSignIn: () => void;
-  onSignUp: () => void;
 }
 
-const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -44,17 +46,22 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
 
     try {
       const response = await authAPI.register({ name, email, password });
-      
+
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+      }
+
       toast({
         title: "Success",
         description: "Account created successfully!",
       });
-      
-      onSignUp();
+
+      navigate("/");
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create account",
+        description:
+          error instanceof Error ? error.message : "Failed to create account",
         variant: "destructive",
       });
     } finally {
@@ -63,19 +70,28 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
   };
 
   return (
-    <AuthLayout 
-      title="Sign up"
-      subtitle="Sign up to enjoy the feature of HD"
-    >
+    <AuthLayout title="Sign up" subtitle="Sign up to enjoy the feature of HD">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Your Name</Label>
           <Input
             id="name"
             type="text"
-            placeholder="Jonas Khanwald"
+            placeholder="Your name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="your-email@gmail.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
@@ -106,26 +122,16 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="jonas_kahnwald@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Creating Account..." : "Sign Up"}
         </Button>
 
         <div className="text-center">
-          <span className="text-sm text-muted-foreground">Already have an account? </span>
-          <Button 
-            variant="link" 
+          <span className="text-sm text-muted-foreground">
+            Already have an account?{" "}
+          </span>
+          <Button
+            variant="link"
             className="text-sm p-0 h-auto"
             onClick={onSwitchToSignIn}
             type="button"

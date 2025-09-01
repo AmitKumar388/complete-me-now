@@ -13,15 +13,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
 
+// Middleware
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:5000", 
     credentials: true,
   })
 );
@@ -29,6 +31,7 @@ app.use(limiter);
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);
 
@@ -36,8 +39,10 @@ app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Server is running" });
 });
 
+// Error handler
 app.use(errorHandler);
 
+// Fallback
 app.use("*", (req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
@@ -55,3 +60,4 @@ const startServer = async () => {
 };
 
 startServer();
+

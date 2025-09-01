@@ -1,31 +1,31 @@
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import Joi from 'joi';
-import { User } from '../models/User';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
+import express from "express";
+import jwt from "jsonwebtoken";
+import Joi from "joi";
+import { User } from "../models/User";
+import { authenticateToken, AuthRequest } from "../middleware/auth";
 
 const router = express.Router();
 
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  password: Joi.string().min(6).required(),
 });
 
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().required()
+  password: Joi.string().required(),
 });
 
 const generateToken = (userId: string): string => {
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
-    throw new Error('JWT_SECRET not configured');
+    throw new Error("JWT_SECRET not configured");
   }
-  return jwt.sign({ userId }, jwtSecret, { expiresIn: '7d' });
+  return jwt.sign({ userId }, jwtSecret, { expiresIn: "7d" });
 };
 
-router.post('/register', async (req, res, next) => {
+router.post("/register", async (req, res, next) => {
   try {
     const { error } = registerSchema.validate(req.body);
     if (error) {
@@ -33,10 +33,13 @@ router.post('/register', async (req, res, next) => {
     }
 
     const { name, email, password } = req.body;
+    if (!name) return res.status(400).json({ message: "'name' is required" });
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists with this email' });
+      return res
+        .status(400)
+        .json({ message: "User already exists with this email" });
     }
 
     const user = new User({ name, email, password });
@@ -45,21 +48,21 @@ router.post('/register', async (req, res, next) => {
     const token = generateToken(user._id.toString());
 
     return res.status(201).json({
-      message: 'User registered successfully',
+      message: "User registered successfully",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        avatar: user.avatar
-      }
+        avatar: user.avatar,
+      },
     });
   } catch (error) {
     return next(error);
   }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
   try {
     const { error } = loginSchema.validate(req.body);
     if (error) {
@@ -68,50 +71,50 @@ router.post('/login', async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = generateToken(user._id.toString());
 
     return res.json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
-        avatar: user.avatar
-      }
+        avatar: user.avatar,
+      },
     });
   } catch (error) {
     return next(error);
   }
 });
 
-router.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
+router.get("/me", authenticateToken, async (req: AuthRequest, res, next) => {
   try {
     return res.json({
       user: {
         id: req.user!._id,
         name: req.user!.name,
         email: req.user!.email,
-        avatar: req.user!.avatar
-      }
+        avatar: req.user!.avatar,
+      },
     });
   } catch (error) {
     return next(error);
   }
 });
 
-router.post('/logout', authenticateToken, async (req, res) => {
-  return res.json({ message: 'Logout successful' });
+router.post("/logout", authenticateToken, async (req, res) => {
+  return res.json({ message: "Logout successful" });
 });
 
 export default router;
