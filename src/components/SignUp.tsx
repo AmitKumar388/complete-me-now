@@ -9,6 +9,7 @@ import AuthLayout from './AuthLayout';
 
 interface SignUpProps {
   onSwitchToSignIn: () => void;
+  onSignUp: () => void;
 }
 
 const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
@@ -17,13 +18,8 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showOtp, setShowOtp] = useState(false); // added this
   const { toast } = useToast();
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,45 +33,32 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
       return;
     }
 
-      if (password.length < 6) {
-        toast({
-          title: "Error",
-          description: "Password must be at least 6 characters long",
-          variant: "destructive",
-        });
-        return;
-      }
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
 
-      setIsLoading(true);
-      
-      try {
-        // Show OTP step
-        setShowOtp(true);
-        toast({
-          title: "OTP Sent!",
-          description: "Please enter the OTP sent to your email to verify your account.",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to send OTP. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // Second step: verify OTP and create account
-      setIsLoading(true);
+    setIsLoading(true);
 
     try {
+      // Show OTP step
+      setShowOtp(true);
+      toast({
+        title: "OTP Sent!",
+        description: "Please enter the OTP sent to your email to verify your account.",
+      });
+
       const response = await authAPI.register({ name, email, password });
-      
+
       toast({
         title: "Success",
         description: "Account created successfully!",
       });
-      
+
       onSignUp();
     } catch (error) {
       toast({
@@ -141,17 +124,6 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="jonas_kahnwald@gmail.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Processing..." : showOtp ? "Verify OTP & Create Account" : "Sign Up"}

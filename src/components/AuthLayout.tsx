@@ -9,7 +9,6 @@ interface AuthLayoutProps {
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) => {
   return (
     <div className="min-h-screen flex">
-      {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-6">
           <div className="text-center">
@@ -27,11 +26,9 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) =>
         </div>
       </div>
 
-      {/* Right side - Blue abstract design */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-900/40"></div>
         <div className="relative">
-          {/* Abstract blue wave design */}
           <div className="w-96 h-96 relative">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full opacity-80 animate-pulse"></div>
             <div className="absolute inset-4 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full opacity-60"></div>

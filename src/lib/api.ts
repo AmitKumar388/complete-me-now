@@ -1,4 +1,3 @@
-// Types
 export interface User {
   id: string;
   name: string;
@@ -18,11 +17,10 @@ export interface Note {
   updatedAt: string;
 }
 
-// Mock data
 const mockUser: User = {
   id: '1',
-  name: 'John Doe',
-  email: 'john@example.com',
+  name: ' Example User',
+  email: 'user-ex@gmsail.com',
   createdAt: new Date().toISOString(),
 };
 
@@ -39,10 +37,9 @@ let mockNotes: Note[] = [
   },
 ];
 
-// Mock Auth API
 export const authAPI = {
   register: async (userData: { name: string; email: string; password: string }) => {
-    // Simulate API delay
+    
     await new Promise(resolve => setTimeout(resolve, 1000));
     localStorage.setItem('isAuthenticated', 'true');
     localStorage.setItem('user', JSON.stringify({ ...mockUser, name: userData.name, email: userData.email }));
@@ -50,7 +47,7 @@ export const authAPI = {
   },
 
   login: async (credentials: { email: string; password: string }) => {
-    // Simulate API delay
+    
     await new Promise(resolve => setTimeout(resolve, 1000));
     localStorage.setItem('isAuthenticated', 'true');
     localStorage.setItem('user', JSON.stringify(mockUser));
@@ -69,7 +66,7 @@ export const authAPI = {
   },
 };
 
-// Mock Notes API
+
 export const notesAPI = {
   getNotes: async () => {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -113,7 +110,7 @@ export const notesAPI = {
   },
 };
 
-// Auto authentication - always return true
+
 export const isAuthenticated = (): boolean => {
   return true;
 };

@@ -11,8 +11,6 @@ interface DashboardProps {
   onSignOut: () => void;
 }
 
-// Note interface is imported from api.ts
-
 const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [user, setUser] = useState<User | null>(null);
@@ -23,7 +21,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Load user and notes on component mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -123,7 +120,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
       await authAPI.logout();
       onSignOut();
     } catch (error) {
-      // Even if logout fails on server, we should still sign out locally
       onSignOut();
     }
   };
@@ -142,7 +138,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto bg-background">
-        {/* Header */}
+        
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -159,7 +155,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
           </Button>
         </div>
 
-        {/* Welcome Section */}
+
         <div className="p-4">
           <Card className="mb-4">
             <CardContent className="p-4">
@@ -168,7 +164,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
             </CardContent>
           </Card>
 
-          {/* Create Note Button */}
           <Button 
             className="w-full mb-6"
             onClick={() => setShowCreateNote(!showCreateNote)}
@@ -176,7 +171,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
             Create Note
           </Button>
 
-          {/* Create Note Input */}
+
           {showCreateNote && (
             <div className="mb-4 space-y-2">
               <Input
@@ -207,7 +202,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
             </div>
           )}
 
-          {/* Notes Section */}
+
           <div>
             <h3 className="text-lg font-medium mb-3">Notes</h3>
             <div className="space-y-2">

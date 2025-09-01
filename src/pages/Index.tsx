@@ -8,7 +8,6 @@ const Index = () => {
   const [showSignUp, setShowSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Auto login after 2 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsAuth(true);
