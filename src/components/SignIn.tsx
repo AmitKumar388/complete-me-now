@@ -22,20 +22,18 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
+    
     try {
-      const response = await authAPI.login({ email, password });
-      
+      await authAPI.login({ email, password });
       toast({
-        title: "Success",
-        description: "Successfully signed in!",
+        title: "Success!",
+        description: "You have been signed in successfully.",
       });
-      
       onSignIn();
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to sign in",
+        description: error instanceof Error ? error.message : "Failed to sign in. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -73,18 +71,19 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
           />
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="keep-logged-in"
-              checked={keepLoggedIn}
-              onCheckedChange={(checked) => setKeepLoggedIn(checked as boolean)}
-            />
-            <Label htmlFor="keep-logged-in" className="text-sm">Keep me logged in</Label>
-          </div>
-          <Button variant="link" className="text-sm p-0 h-auto">
-            Resend OTP
-          </Button>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="keep-logged-in" 
+            checked={keepLoggedIn}
+            onCheckedChange={(checked) => setKeepLoggedIn(checked as boolean)}
+          />
+          <Label 
+            htmlFor="keep-logged-in" 
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Keep me logged in
+          </Label>
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>

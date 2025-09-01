@@ -85,7 +85,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
   const handleDeleteNote = async (id: string) => {
     try {
       await notesAPI.deleteNote(id);
-      setNotes(notes.filter(note => note._id !== id));
+      setNotes(notes.filter(note => note.id !== id));
       
       toast({
         title: "Success",
@@ -103,7 +103,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
   const handleTogglePin = async (id: string) => {
     try {
       const updatedNote = await notesAPI.togglePin(id);
-      setNotes(notes.map(note => note._id === id ? updatedNote : note));
+      setNotes(notes.map(note => note.id === id ? updatedNote : note));
       
       toast({
         title: "Success",
@@ -217,7 +217,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
                   return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
                 })
                 .map((note) => (
-                <Card key={note._id} className={`hover:shadow-sm transition-shadow ${note.isPinned ? 'ring-2 ring-primary/20' : ''}`}>
+                <Card key={note.id} className={`hover:shadow-sm transition-shadow ${note.isPinned ? 'ring-2 ring-primary/20' : ''}`}>
                   <CardContent className="p-3">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
@@ -235,7 +235,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleTogglePin(note._id)}
+                          onClick={() => handleTogglePin(note.id)}
                           className={`h-8 w-8 p-0 ${note.isPinned ? 'text-primary' : 'text-muted-foreground'}`}
                         >
                           <Pin className="h-4 w-4" />
@@ -243,7 +243,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onSignOut }) => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteNote(note._id)}
+                          onClick={() => handleDeleteNote(note.id)}
                           className="h-8 w-8 p-0 hover:bg-destructive/10"
                         >
                           <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />

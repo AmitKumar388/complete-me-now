@@ -1,18 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { authAPI } from "@/lib/api";
-import AuthLayout from "./AuthLayout";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { authAPI } from '@/lib/api';
+import OtpInput from '@/components/OtpInput';
+import AuthLayout from './AuthLayout';
 
 interface SignUpProps {
   onSwitchToSignIn: () => void;
 }
 
-const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
-  const navigate = useNavigate();
+const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -23,7 +27,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (password !== confirmPassword) {
       toast({
         title: "Error",
@@ -33,35 +37,50 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
       return;
     }
 
-    if (password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
+      if (password.length < 6) {
+        toast({
+          title: "Error",
+          description: "Password must be at least 6 characters long",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setIsLoading(true);
+      setIsLoading(true);
+      
+      try {
+        // Show OTP step
+        setShowOtp(true);
+        toast({
+          title: "OTP Sent!",
+          description: "Please enter the OTP sent to your email to verify your account.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to send OTP. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Second step: verify OTP and create account
+      setIsLoading(true);
 
     try {
       const response = await authAPI.register({ name, email, password });
-
-      if (response.token) {
-        localStorage.setItem("token", response.token);
-      }
-
+      
       toast({
         title: "Success",
         description: "Account created successfully!",
       });
-
-      navigate("/");
+      
+      onSignUp();
     } catch (error) {
       toast({
         title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to create account",
+        description: error instanceof Error ? error.message : "Failed to create account",
         variant: "destructive",
       });
     } finally {
@@ -122,8 +141,20 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
           />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="jonas_kahnwald@gmail.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating Account..." : "Sign Up"}
+          {isLoading ? "Processing..." : showOtp ? "Verify OTP & Create Account" : "Sign Up"}
         </Button>
 
         <div className="text-center">
