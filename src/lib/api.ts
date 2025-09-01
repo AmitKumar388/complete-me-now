@@ -1,21 +1,16 @@
-const API_BASE_URL = 'http://localhost:5000/api';
-
 // Types
 export interface User {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   avatar?: string;
-  isEmailVerified: boolean;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface Note {
-  _id: string;
+  id: string;
   title: string;
   content: string;
-  userId: string;
   tags: string[];
   isPinned: boolean;
   color: string;
@@ -23,205 +18,102 @@ export interface Note {
   updatedAt: string;
 }
 
-export interface AuthResponse {
-  token: string;
-  user: User;
-}
-
-export interface ApiError {
-  message: string;
-  success: false;
-}
-
-// Helper function to handle API responses
-const handleResponse = async (response: Response) => {
-  const data = await response.json();
-  
-  if (!response.ok) {
-    throw new Error(data.message || 'An error occurred');
-  }
-  
-  return data;
+// Mock data
+const mockUser: User = {
+  id: '1',
+  name: 'John Doe',
+  email: 'john@example.com',
+  createdAt: new Date().toISOString(),
 };
 
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('authToken');
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
+let mockNotes: Note[] = [
+  {
+    id: '1',
+    title: 'Welcome Note',
+    content: 'Welcome to your notes app! This is your first note.',
+    tags: ['welcome'],
+    isPinned: true,
+    color: '#fbbf24',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
 
-// Auth API
+// Mock Auth API
 export const authAPI = {
-  // Register new user
-  register: async (userData: {
-    name: string;
-    email: string;
-    password: string;
-  }): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    });
-    
-    const data = await handleResponse(response);
-    
-    // Store token in localStorage
-    if (data.token) {
-      localStorage.setItem('authToken', data.token);
-    }
-    
-    return data;
+  register: async (userData: { name: string; email: string; password: string }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('user', JSON.stringify({ ...mockUser, name: userData.name, email: userData.email }));
+    return { user: { ...mockUser, name: userData.name, email: userData.email } };
   },
 
-  // Login user
-  login: async (credentials: {
-    email: string;
-    password: string;
-  }): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
-    
-    const data = await handleResponse(response);
-    
-    // Store token in localStorage
-    if (data.token) {
-      localStorage.setItem('authToken', data.token);
-    }
-    
-    return data;
+  login: async (credentials: { email: string; password: string }) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    return { user: mockUser };
   },
 
-  // Get current user
-  getCurrentUser: async (): Promise<User> => {
-    const response = await fetch(`${API_BASE_URL}/auth/me`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-    
-    return handleResponse(response);
+  getCurrentUser: async () => {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : mockUser;
   },
 
-  // Logout
-  logout: async (): Promise<{ message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-    });
-    
-    const data = await handleResponse(response);
-    
-    // Remove token from localStorage
-    localStorage.removeItem('authToken');
-    
-    return data;
+  logout: async () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
+    return { message: 'Logged out successfully' };
   },
 };
 
-// Notes API
+// Mock Notes API
 export const notesAPI = {
-  // Get all notes for authenticated user
-  getNotes: async (params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-    tag?: string;
-  }): Promise<{
-    notes: Note[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }> => {
-    const searchParams = new URLSearchParams();
-    if (params?.page) searchParams.append('page', params.page.toString());
-    if (params?.limit) searchParams.append('limit', params.limit.toString());
-    if (params?.search) searchParams.append('search', params.search);
-    if (params?.tag) searchParams.append('tag', params.tag);
-    
-    const response = await fetch(`${API_BASE_URL}/notes?${searchParams}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-    
-    return handleResponse(response);
+  getNotes: async () => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return {
+      notes: mockNotes,
+      total: mockNotes.length,
+      page: 1,
+      totalPages: 1,
+    };
   },
 
-  // Get single note by ID
-  getNote: async (id: string): Promise<Note> => {
-    const response = await fetch(`${API_BASE_URL}/notes/${id}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-    });
-    
-    return handleResponse(response);
+  createNote: async (noteData: { title: string; content: string; tags?: string[]; color?: string }) => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const newNote: Note = {
+      id: Date.now().toString(),
+      title: noteData.title,
+      content: noteData.content,
+      tags: noteData.tags || [],
+      isPinned: false,
+      color: noteData.color || '#f3f4f6',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    mockNotes.unshift(newNote);
+    return newNote;
   },
 
-  // Create new note
-  createNote: async (noteData: {
-    title: string;
-    content: string;
-    tags?: string[];
-    color?: string;
-  }): Promise<Note> => {
-    const response = await fetch(`${API_BASE_URL}/notes`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(noteData),
-    });
-    
-    return handleResponse(response);
+  deleteNote: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    mockNotes = mockNotes.filter(note => note.id !== id);
+    return { message: 'Note deleted successfully' };
   },
 
-  // Update note
-  updateNote: async (id: string, noteData: {
-    title?: string;
-    content?: string;
-    tags?: string[];
-    isPinned?: boolean;
-    color?: string;
-  }): Promise<Note> => {
-    const response = await fetch(`${API_BASE_URL}/notes/${id}`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(noteData),
-    });
-    
-    return handleResponse(response);
-  },
-
-  // Delete note
-  deleteNote: async (id: string): Promise<{ message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/notes/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
-    });
-    
-    return handleResponse(response);
-  },
-
-  // Toggle pin status
-  togglePin: async (id: string): Promise<Note> => {
-    const response = await fetch(`${API_BASE_URL}/notes/${id}/pin`, {
-      method: 'PATCH',
-      headers: getAuthHeaders(),
-    });
-    
-    return handleResponse(response);
+  togglePin: async (id: string) => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const note = mockNotes.find(n => n.id === id);
+    if (note) {
+      note.isPinned = !note.isPinned;
+    }
+    return note!;
   },
 };
 
-// Check if user is authenticated
+// Auto authentication - always return true
 export const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('authToken');
-};
-
-// Get stored auth token
-export const getAuthToken = (): string | null => {
-  return localStorage.getItem('authToken');
+  return true;
 };
