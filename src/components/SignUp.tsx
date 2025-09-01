@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/lib/api';
+import OtpInput from '@/components/OtpInput';
 import AuthLayout from './AuthLayout';
 
 interface SignUpProps {
@@ -16,49 +17,74 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!showOtp) {
+      // First step: validate form data
+      if (password !== confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Passwords do not match",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    if (password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
+      if (password.length < 6) {
+        toast({
+          title: "Error",
+          description: "Password must be at least 6 characters long",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setIsLoading(true);
-
-    try {
-      const response = await authAPI.register({ name, email, password });
+      setIsLoading(true);
       
-      toast({
-        title: "Success",
-        description: "Account created successfully!",
-      });
-      
-      onSignUp();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create account",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      try {
+        // Show OTP step
+        setShowOtp(true);
+        toast({
+          title: "OTP Sent!",
+          description: "Please enter the OTP sent to your email to verify your account.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to send OTP. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Second step: verify OTP and create account
+      setIsLoading(true);
+
+      try {
+        const response = await authAPI.register({ name, email, password });
+        
+        toast({
+          title: "Success",
+          description: "Account created successfully!",
+        });
+        
+        onSignUp();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to create account",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -118,8 +144,26 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn, onSignUp }) => {
           />
         </div>
 
+        {showOtp && (
+          <div className="space-y-2">
+            <Label htmlFor="otp" className="text-sm font-medium">
+              Enter OTP
+            </Label>
+            <div className="flex justify-center">
+              <OtpInput
+                value={otp}
+                onChange={setOtp}
+                length={6}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              Please enter the 6-digit code sent to your email
+            </p>
+          </div>
+        )}
+
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating Account..." : "Sign Up"}
+          {isLoading ? "Processing..." : showOtp ? "Verify OTP & Create Account" : "Sign Up"}
         </Button>
 
         <div className="text-center">

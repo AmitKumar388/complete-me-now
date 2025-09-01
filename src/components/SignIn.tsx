@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { authAPI } from '@/lib/api';
-import OtpInput from '@/components/OtpInput';
 import AuthLayout from './AuthLayout';
 
 interface SignInProps {
@@ -16,10 +15,8 @@ interface SignInProps {
 const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,22 +24,12 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
     setIsLoading(true);
     
     try {
-      if (!showOtp) {
-        // First step: validate email/password
-        setShowOtp(true);
-        toast({
-          title: "OTP Sent!",
-          description: "Please enter the OTP sent to your email.",
-        });
-      } else {
-        // Second step: validate OTP and login
-        await authAPI.login({ email, password });
-        toast({
-          title: "Success!",
-          description: "You have been signed in successfully.",
-        });
-        onSignIn();
-      }
+      await authAPI.login({ email, password });
+      toast({
+        title: "Success!",
+        description: "You have been signed in successfully.",
+      });
+      onSignIn();
     } catch (error) {
       toast({
         title: "Error",
@@ -84,23 +71,6 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
           />
         </div>
 
-        {showOtp && (
-          <div className="space-y-2">
-            <Label htmlFor="otp" className="text-sm font-medium">
-              Enter OTP
-            </Label>
-            <div className="flex justify-center">
-              <OtpInput
-                value={otp}
-                onChange={setOtp}
-                length={6}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground text-center">
-              Please enter the 6-digit code sent to your email
-            </p>
-          </div>
-        )}
 
         <div className="flex items-center space-x-2">
           <Checkbox 
@@ -117,7 +87,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp, onSignIn }) => {
         </div>
 
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Processing..." : showOtp ? "Verify OTP & Sign In" : "Continue"}
+          {isLoading ? "Signing In..." : "Sign In"}
         </Button>
 
         <div className="text-center">
